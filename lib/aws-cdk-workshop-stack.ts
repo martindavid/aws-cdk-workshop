@@ -1,18 +1,19 @@
-import * as sns from '@aws-cdk/aws-sns';
-import * as subs from '@aws-cdk/aws-sns-subscriptions';
-import * as sqs from '@aws-cdk/aws-sqs';
 import * as cdk from '@aws-cdk/core';
+import lambda = require('@aws-cdk/aws-lambda');
+import apigw = require('@aws-cdk/aws-apigateway');
 
 export class AwsCdkWorkshopStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const queue = new sqs.Queue(this, 'AwsCdkWorkshopQueue', {
-      visibilityTimeout: cdk.Duration.seconds(300)
+    const hello = new lambda.Function(this, 'HelloHandler', {
+      runtime: lambda.Runtime.NODEJS_12_X,
+      code: lambda.Code.asset('lambda'),
+      handler: 'hello.handler',
     });
 
-    const topic = new sns.Topic(this, 'AwsCdkWorkshopTopic');
-
-    topic.addSubscription(new subs.SqsSubscription(queue));
+    new apigw.LambdaRestApi(this, 'Endpoint', {
+      handler: hello,
+    });
   }
 }
